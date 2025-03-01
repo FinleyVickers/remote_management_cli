@@ -212,11 +212,6 @@ async fn monitor_system(sess: &mut Session, interval: u64) -> Result<()> {
     let mut last_update = Instant::now();
     let mut stats = SystemStats::default();
 
-    // Create screenshots directory if it doesn't exist
-    std::fs::create_dir_all("screenshots").unwrap_or_else(|_| {
-        println!("Could not create screenshots directory");
-    });
-
     loop {
         if last_update.elapsed() >= Duration::from_secs(interval) {
             let commands = vec![
@@ -348,61 +343,8 @@ async fn monitor_system(sess: &mut Session, interval: u64) -> Result<()> {
 
         if event::poll(Duration::from_millis(200))? {
             if let Event::Key(key) = event::read()? {
-                match key.code {
-                    KeyCode::Char('q') => break,
-                    KeyCode::Char('s') => {
-                        // Take a screenshot (macOS specific)
-                        let timestamp = chrono::Local::now().format("%Y%m%d_%H%M%S").to_string();
-                        let filename = format!("screenshots/remote_management_{}.png", timestamp);
-                        
-                        // Temporarily restore the terminal to normal mode
-                        disable_raw_mode()?;
-                        std::io::stdout().execute(LeaveAlternateScreen)?;
-                        
-                        // Short delay to ensure screen is visible
-                        std::thread::sleep(Duration::from_millis(500));
-                        
-                        // Take screenshot
-                        let status = std::process::Command::new("screencapture")
-                            .arg("-x") // Capture without sound
-                            .arg(filename.clone())
-                            .status();
-                        
-                        // Return to alternate screen mode
-                        std::io::stdout().execute(EnterAlternateScreen)?;
-                        enable_raw_mode()?;
-                        
-                        if let Ok(status) = status {
-                            if status.success() {
-                                // Show a notification on the screen that screenshot was taken
-                                terminal.draw(|f| {
-                                    let size = f.size();
-                                    let message = format!("Screenshot saved to {}", filename);
-                                    
-                                    // Use fixed dimensions for the popup
-                                    let width = message.len() as u16 + 4; // Add some padding
-                                    let height = 3; // 1 for text, 2 for borders
-                                    
-                                    let popup_area = Rect {
-                                        x: (size.width - width) / 2,
-                                        y: (size.height - height) / 2,
-                                        width,
-                                        height,
-                                    };
-                                    
-                                    let notification = Paragraph::new(message)
-                                        .style(Style::default().fg(Color::Green))
-                                        .block(Block::default().borders(Borders::ALL));
-                                    
-                                    f.render_widget(notification, popup_area);
-                                })?;
-                                
-                                // Wait for 2 seconds to show the notification
-                                std::thread::sleep(Duration::from_secs(2));
-                            }
-                        }
-                    },
-                    _ => {}
+                if key.code == KeyCode::Char('q') {
+                    break;
                 }
             }
         }
