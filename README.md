@@ -15,9 +15,8 @@ A powerful terminal-based remote server monitoring tool written in Rust. Monitor
 
 ## 📊 Screenshots
 
-```
+<img width="1509" alt="Screenshot 2025-02-28 at 10 03 03 PM" src="https://github.com/user-attachments/assets/8346edec-1955-4272-a3b3-fbcf9ea2a38f" />
 
-```
 
 ## 🚀 Installation
 
